@@ -1,0 +1,27 @@
+---
+layout: base.njk
+title: "Books"
+permalink: /books/
+---
+
+<section class="section">
+  <h2 class="section-title">Books</h2>
+  <ol class="timeline">
+    {% for year in books.timeline %}
+    <li class="tl-year">
+      <h3 class="tl-year-label">{{ year.year }}</h3>
+      <ul class="tl-books">
+        {% for book in year.books %}
+        <li class="tl-book">
+          <span class="tl-main">
+            <span class="tl-title">{{ book.title }}</span> <span class="tl-author">{{ book.author }}{% if book.yearPublished %} · {{ book.yearPublished }}{% endif %}</span>
+            {% if book.review %}<span class="tl-review">{{ book.review }}</span>{% endif %}
+          </span>
+          <span class="tl-stars" data-rated="{{ book.rating }}" aria-label="Rated {{ book.rating }} out of 5">{{ book.stars }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </li>
+    {% endfor %}
+  </ol>
+</section>

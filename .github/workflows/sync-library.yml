@@ -1,0 +1,37 @@
+# Syncs read books from the Goodreads RSS feed into goodreads.csv and pushes,
+# which triggers the site rebuild. Weekly, plus on-demand via the Actions UI.
+name: sync-library
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Fetch Goodreads RSS and merge into goodreads.csv
+        env:
+          GOODREADS_USER_ID: ${{ secrets.GOODREADS_USER_ID }}
+        run: node tools/sync-goodreads.js
+
+      - name: Verify the site still builds
+        run: |
+          npm ci
+          npm run build
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "library: sync from Goodreads RSS [skip ci]"
+          file_pattern: src/_data/goodreads.csv

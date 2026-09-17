@@ -1,0 +1,8 @@
+_site
+.sass-cache
+.jekyll-metadata
+Gemfile.lock
+# Eleventy
+node_modules/
+_site/
+.DS_Store

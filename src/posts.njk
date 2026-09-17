@@ -1,0 +1,25 @@
+---
+layout: base.njk
+title: "Posts"
+permalink: /posts/
+---
+
+<!-- TODO: write intro -->
+
+<section class="section">
+    {% if collections.posts.length > 0 %}
+    <ul class="post-list">
+      {%- for post in collections.posts | reverse -%}
+        <li class="post-list-item">
+          <span class="post-list-date">{{ post.date | postDate }}</span>
+          <a href="{{ post.url | url }}">{{ post.data.title }}</a>
+        </li>
+      {%- endfor -%}
+    </ul>
+    {% else %}
+    <div class="content">
+      <p>No posts yet.</p>
+    </div>
+    {% endif %}
+</section>
+

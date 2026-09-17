@@ -1,0 +1,675 @@
+/* ==========================================================================
+   Blog default: Braun/Dieter-Rams — warm gray, engineered headings, one
+   orange signal, blue links. Light/dark via the CSS variables below.
+   ========================================================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #f4f3f1;
+  --fg: #1c1c1c;
+  --muted: #5c5c5c;
+  --link: #0a5bd3;
+  --link-hover: #ef7b00;
+  --link-visited: #444444;
+  --border: #d9d7d3;
+  --code-bg: #e9e7e3;
+  --accent: #ef7b00;
+  --code-kw: #b34700;
+  --code-str: #1a6e5a;
+  --code-fn: #0a5bd3;
+  --code-num: #6a3ab0;
+  --code-comment: #7a7a76;
+  --max-width: 700px;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Courier New", monospace;
+}
+
+/* Dark mode. Zero-specificity :where() so per-page palettes (which redefine
+   :root) always win over the theme. */
+:root:where([data-theme="dark"]) {
+  --bg: #262626;
+  --fg: #eae8e4;
+  --muted: #a5a29c;
+  --link: #6aa0ff;
+  --link-hover: #ff9d3d;
+  --link-visited: #b8b5ae;
+  --border: #3a3a3a;
+  --code-bg: #323230;
+  --accent: #ff9d3d;
+  --code-kw: #ffa04d;
+  --code-str: #6ad0b4;
+  --code-fn: #8ab8ff;
+  --code-num: #c9a3ff;
+  --code-comment: #a5a29c;
+}
+
+/* No-JS fallback: follow the OS preference without flashing. */
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    --bg: #262626;
+    --fg: #eae8e4;
+    --muted: #a5a29c;
+    --link: #6aa0ff;
+    --link-hover: #ff9d3d;
+    --link-visited: #b8b5ae;
+    --border: #3a3a3a;
+    --code-bg: #323230;
+    --accent: #ff9d3d;
+    --code-kw: #ffa04d;
+    --code-str: #6ad0b4;
+    --code-fn: #8ab8ff;
+    --code-num: #c9a3ff;
+    --code-comment: #a5a29c;
+  }
+}
+
+html {
+  /* Reserve scrollbar space so short/long pages don't shift horizontally */
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--fg);
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+::selection {
+  background: #b9d7f5;
+}
+
+.site {
+  max-width: var(--max-width);
+  /* Left-aligned: fixed gutter from the viewport edge instead of centering */
+  margin: 0 0 0 clamp(1.25rem, 6vw, 4rem);
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 1.25rem 0;
+}
+
+.site main {
+  flex: 1;
+}
+
+a {
+  color: var(--link);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+a {
+  text-decoration: none;
+  border-bottom: 2px solid var(--link);
+}
+
+a:visited {
+  color: var(--link-visited);
+}
+
+a:hover {
+  color: var(--link-hover);
+  /* Non-color cue: thicken the underline on hover (colorblind-safe) */
+  text-decoration-thickness: 2px;
+}
+
+a:hover {
+  border-color: var(--link-hover);
+}
+
+:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ==========================================================================
+   Header
+   ========================================================================== */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-bottom: 0.6rem;
+  margin-bottom: 2.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.menu {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  font-size: 0.95rem;
+}
+
+.menu a[aria-current="page"] {
+  text-decoration: none;
+  color: var(--fg);
+  /* Fake bold via horizontal stroke so the glyph width (and thus the
+     spacing between menu items) does not change when selected */
+  text-shadow: 0.45px 0 0 currentColor, -0.45px 0 0 currentColor;
+}
+
+/* Floating theme toggle: bottom-right, 48px tap target, always reachable.
+   Braun button: circle, 2px hard border, one glyph, perfectly centered via
+   flexbox — no font-dependent glyph metrics. The moon shows in light mode,
+   the sun in dark mode; CSS picks, JS only syncs labels. */
+.theme-toggle {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  padding: 0;
+  color: var(--fg);
+  background: var(--bg);
+  border: 2px solid var(--fg);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+
+/* Weather glyph (Home): Braun-style geometric line icon. Inherits the
+   text color so it survives theme switches with no special-casing. */
+.weather-icon {
+  width: 1.05em;
+  height: 1.05em;
+  vertical-align: -0.14em;
+  margin-right: 0.15em;
+}
+
+.theme-toggle svg {
+  display: block;
+}
+
+.theme-toggle .icon-sun {
+  display: none;
+}
+
+:root[data-theme="dark"] .theme-toggle .icon-sun {
+  display: block;
+}
+
+:root[data-theme="dark"] .theme-toggle .icon-moon {
+  display: none;
+}
+
+.theme-toggle:hover {
+  color: var(--link-hover);
+  border-color: var(--link-hover);
+}
+
+/* ==========================================================================
+   Sections
+   ========================================================================== */
+
+.section {
+  margin-bottom: 2.5rem;
+}
+
+.section-title {
+  font-size: 1.15rem;
+  font-weight: bold;
+  margin-bottom: 0.9rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.25rem;
+}
+
+.section-title {
+  font-size: 1.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 2px solid var(--fg);
+  padding-bottom: 0.35rem;
+}
+
+.article-content blockquote {
+  border-left: 4px solid var(--accent);
+  background: var(--code-bg);
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.content p {
+  margin-bottom: 1rem;
+}
+
+.content p:last-child {
+  margin-bottom: 0;
+}
+
+/* ==========================================================================
+   Writing / Post List (directory-listing style)
+   ========================================================================== */
+
+.post-list {
+  list-style: none;
+}
+
+.post-list-item {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.3rem 0;
+}
+
+.post-list-date {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--muted);
+  flex-shrink: 0;
+  min-width: 7em;
+}
+
+.post-list-item a {
+  font-weight: bold;
+}
+
+/* ==========================================================================
+   Article Content
+   ========================================================================== */
+
+.article-header {
+  margin-bottom: 2rem;
+}
+
+.article-header h1 {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 0.35rem;
+}
+
+.article-meta {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.article-meta a {
+  margin-left: 0.5rem;
+}
+
+.article-content {
+  line-height: 1.7;
+}
+
+.article-content h1,
+.article-content h2,
+.article-content h3,
+.article-content h4,
+.article-content h5,
+.article-content h6 {
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  font-weight: bold;
+}
+
+.article-content h2 {
+  font-size: 1.35rem;
+}
+
+.article-content h3 {
+  font-size: 1.15rem;
+}
+
+.article-content p {
+  margin-bottom: 1.25rem;
+}
+
+.article-content ul,
+.article-content ol {
+  margin-left: 2rem;
+  margin-bottom: 1.25rem;
+}
+
+.article-content li {
+  margin-bottom: 0.5rem;
+}
+
+.article-content code {
+  font-family: var(--mono);
+  font-size: 0.85em;
+  background: var(--code-bg);
+  padding: 0.05em 0.3em;
+}
+
+.article-content pre {
+  background: var(--code-bg);
+  padding: 0.9rem 1rem;
+  overflow-x: auto;
+  margin-bottom: 1.25rem;
+}
+
+.article-content pre code {
+  background: none;
+  padding: 0;
+}
+
+/* Syntax highlighting (Prism tokens) — Braun palette, light + dark via vars.
+   Orange / teal / blue / violet stay distinct under all color-vision types. */
+.token.keyword { color: var(--code-kw); font-weight: bold; }
+.token.string, .token.char, .token.docstring, .token.triple-quoted-string { color: var(--code-str); }
+.token.function { color: var(--code-fn); }
+.token.number, .token.boolean { color: var(--code-num); }
+.token.comment, .token.prolog, .token.doctype, .token.cdata { color: var(--code-comment); font-style: italic; }
+.token.operator, .token.punctuation { color: var(--fg); opacity: 0.85; }
+.token.builtin, .token.class-name, .token.constant { color: var(--code-fn); }
+.token.tag { color: var(--code-kw); }
+.token.attr-name { color: var(--code-str); }
+.token.attr-value, .token.selector { color: var(--code-fn); }
+
+.article-content blockquote {
+  border-left: 3px solid var(--border);
+  padding-left: 1rem;
+  margin: 1.25rem 0;
+  color: var(--muted);
+}
+
+.article-content hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.article-content table {
+  border-collapse: collapse;
+  margin-bottom: 1.25rem;
+  font-size: 0.95rem;
+}
+
+.article-content th,
+.article-content td {
+  border: 1px solid var(--border);
+  padding: 0.35rem 0.75rem;
+  text-align: left;
+}
+
+.article-content th {
+  background: var(--code-bg);
+  font-weight: bold;
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+
+.footer {
+  margin-top: auto;
+  padding-top: 1rem;
+  padding-bottom: 1.5rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.footer-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.footer-links {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   Library
+   ========================================================================== */
+
+.book-list {
+  list-style: none;
+}
+
+.book-entry {
+  padding: 0.3rem 0;
+}
+
+.book-entry-title {
+  font-weight: bold;
+  font-size: 0.95rem;
+}
+
+.book-entry-series {
+  font-weight: normal;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.book-entry-author {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.book-entry-year {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.book-entry-date {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.book-entry-comment {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-top: 0.15rem;
+}
+
+/* ==========================================================================
+/* ==========================================================================
+   Library — timeline
+   ========================================================================== */
+
+/* Rail drawn per-year so it starts at the first dot and ends at the last,
+   instead of overshooting both ends. Dot center sits at x=0 of the timeline's
+   left edge; each segment is a 2px strip centered there. */
+.timeline {
+  list-style: none;
+  margin-left: 0.4rem;
+  padding-left: 2rem;
+}
+
+.tl-year {
+  position: relative;
+  padding-bottom: 1.4rem;
+}
+
+.tl-year:last-child {
+  padding-bottom: 0;
+}
+
+.tl-year::after {
+  content: "";
+  position: absolute;
+  left: calc(-2rem - 1px);
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--border);
+}
+
+.tl-year:first-child::after {
+  top: calc(0.44em + 5.5px);
+}
+
+.tl-year:last-child::after {
+  top: 0;
+  bottom: auto;
+  height: calc(0.44em + 5.5px);
+}
+
+/* Single year: dot only, no rail */
+.tl-year:first-child:last-child::after {
+  display: none;
+}
+
+.tl-year::before {
+  content: "";
+  position: absolute;
+  left: calc(-2rem - 5.5px);
+  top: 0.44em;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--accent);
+  z-index: 1;
+}
+
+.tl-year-label {
+  font-size: 1.05rem;
+  margin-bottom: 0.4rem;
+}
+
+.tl-books {
+  list-style: none;
+}
+
+/* Month label, shown once per group */
+.tl-book {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 4.2em;
+  gap: 0 0.75rem;
+  align-items: baseline;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.88rem;
+}
+
+.tl-book:last-child {
+  border-bottom: none;
+}
+
+.tl-date {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.tl-main {
+  min-width: 0;
+}
+
+.tl-title {
+  font-weight: bold;
+}
+
+.tl-author {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+/* The review recedes: italic, a step smaller than the author line. It spans
+   the full grid column; text-wrap: pretty avoids a lone word on the last line
+   where supported. */
+.tl-review {
+  display: block;
+  font-size: 0.75rem;
+  font-style: italic;
+  line-height: 1.55;
+  color: var(--muted);
+  white-space: pre-line;
+  text-wrap: pretty;
+  margin-top: 0.25rem;
+}
+
+/* Fixed 5-glyph column, right-aligned: every row's rating shares one edge,
+   Braun-style. Stars stay muted; color is not the signal, position is. */
+.tl-stars {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.tl-stars[data-rated="5"] {
+  color: var(--accent);
+}
+
+@media (max-width: 640px) {
+  .tl-book {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tl-stars {
+    text-align: left;
+  }
+}
+
+   Mobile
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  body {
+    font-size: 17px;
+  }
+
+  .theme-toggle {
+    right: 0.9rem;
+    bottom: 0.9rem;
+  }
+
+  .site {
+    padding-top: 1.5rem;
+  }
+
+  .header {
+    margin-bottom: 2rem;
+  }
+
+  .section {
+    margin-bottom: 2rem;
+  }
+
+  .article-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .footer-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+}

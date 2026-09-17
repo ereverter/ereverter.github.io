@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    // Theme: defaults to the OS preference on every load ("system"). The
+    // floating button at bottom right switches manually for the session.
+    (function () {
+      var m = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
+      var dark = m ? m.matches : false;
+      document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme-pref", "system");
+    })();
+  </script>
+  {% set siteName = site.name or "Links" %}
+  {% if title %}
+    {% set pageTitle = title ~ " - " ~ siteName %}
+  {% else %}
+    {% set pageTitle = siteName %}
+  {% endif %}
+  {% set pageDescription = description or site.description %}
+  {% if site.url %}{% set canonicalUrl = site.url ~ page.url %}{% endif %}
+  {% set socialImage = image or site.image %}
+  {% if socialImage and site.url %}
+    {% set socialImageUrl = site.url ~ socialImage %}
+  {% else %}
+    {% set socialImageUrl = socialImage %}
+  {% endif %}
+  {% if socialImageUrl %}
+    {% set twitterCard = "summary_large_image" %}
+  {% else %}
+    {% set twitterCard = "summary" %}
+  {% endif %}
+
+  <title>{{ pageTitle }}</title>
+  {% if pageDescription %}<meta name="description" content="{{ pageDescription }}">{% endif %}
+  {% if canonicalUrl %}<link rel="canonical" href="{{ canonicalUrl }}">{% endif %}
+
+  <meta property="og:title" content="{{ pageTitle }}">
+  {% if pageDescription %}<meta property="og:description" content="{{ pageDescription }}">{% endif %}
+  {% if canonicalUrl %}<meta property="og:url" content="{{ canonicalUrl }}">{% endif %}
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{ siteName }}">
+  {% if socialImageUrl %}<meta property="og:image" content="{{ socialImageUrl }}">{% endif %}
+
+  <meta name="twitter:card" content="{{ twitterCard }}">
+  <meta name="twitter:title" content="{{ pageTitle }}">
+  {% if pageDescription %}<meta name="twitter:description" content="{{ pageDescription }}">{% endif %}
+  {% if socialImageUrl %}<meta name="twitter:image" content="{{ socialImageUrl }}">{% endif %}
+  {% if site.twitter %}<meta name="twitter:site" content="{{ site.twitter }}">{% endif %}
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>E</text></svg>">
+  <link rel="alternate" type="application/atom+xml" title="{{ siteName }}" href="/feed.xml">
+  <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+  <div class="site">
+    <header class="header">
+      <nav class="menu">
+        <a href="/"{% if page.url == "/" %} aria-current="page"{% endif %}>Home</a>
+        <a href="/posts/"{% if page.url == "/posts/" %} aria-current="page"{% endif %}>Posts</a>
+        <a href="/books/"{% if page.url == "/books/" %} aria-current="page"{% endif %}>Books</a>
+        <a href="/about/"{% if page.url == "/about/" %} aria-current="page"{% endif %}>About</a>
+      </nav>
+    </header>
+
+    <main>
+      {{ content | safe }}
+    </main>
+
+    <footer class="footer">
+      <div class="footer-container">
+        <span>&copy; {% year %} {{ siteName }}</span>
+        <div class="footer-links">
+          <a href="https://github.com/ereverter">GitHub</a>
+          <a href="https://goodreads.com/ereverter">Goodreads</a>
+          <a href="/feed.xml">Feed</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+  <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch color mode">
+    <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+    <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>
+  </button>
+  <script>
+    (function () {
+      var btn = document.getElementById("theme-toggle");
+      if (!btn) return;
+      var root = document.documentElement;
+      var mq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+      function syncButton() {
+        var isDark = root.getAttribute("data-theme") === "dark";
+        btn.setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
+        btn.title = isDark ? "Light" : "Dark";
+      }
+      function setMode(mode) {
+        root.setAttribute("data-theme", mode);
+        root.setAttribute("data-theme-pref", mode);
+        syncButton();
+      }
+      // Follow OS-level changes while the user hasn't manually toggled.
+      if (mq && mq.addEventListener) {
+        mq.addEventListener("change", function (e) {
+          if ((root.getAttribute("data-theme-pref") || "system") === "system") {
+            root.setAttribute("data-theme", e.matches ? "dark" : "light");
+            syncButton();
+          }
+        });
+      }
+      btn.addEventListener("click", function () {
+        setMode(root.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      });
+      syncButton();
+    })();
+  </script>
+</body>
+</html>
+
